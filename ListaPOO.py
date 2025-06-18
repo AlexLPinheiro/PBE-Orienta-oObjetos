@@ -37,12 +37,16 @@ class ColecaoLivros(ItemBiblioteca):
     def verificar_disponibilidade_colecao(self):
         for livro in self.lista_livros:
             if not livro.disponivel:
-                return False
-            return True
+                self.disponivel= False
+            else:
+                self.disponivel=True
 
     def obter_info(self):
+        informacoes = [f"Informações da {self.titulo}: "]
         for livro in self.lista_livros:
-            return f"Livro: {livro.titulo}"
+            informacoes.append(f"Título: {livro.titulo}\nano de lançamento: {livro.ano_publicacao}\nDisponível: {livro.disponivel}")
+
+        return f"{"\n\n".join(informacoes)}"
             
 
 
@@ -103,12 +107,11 @@ class Biblioteca:
 
 class RelatorioBiblioteca:
 
-
     def __init__(self, biblioteca: Biblioteca):
-
-
-
         self.biblioteca = biblioteca
+        self.disponiveis = 0
+        self.emprestados = 0
+        self.relacao = ""
 
     def gerar_relatorio_completo(self) :
 
@@ -116,38 +119,59 @@ class RelatorioBiblioteca:
             return "A biblioteca está vazia. Nenhum item para relatar."
 
 
-        partes_relatorio = ["=== RELATÓRIO COMPLETO DE ITENS ==="]
+        partesRelatorio = ["\nRelatório: "]
         for item in self.biblioteca.items.values():
-            partes_relatorio.append(item.obter_info())
-            partes_relatorio.append("-" * 30)
+            partesRelatorio.append(item.obter_info())
+            partesRelatorio.append("-" * 30)
 
-        return "\n".join(partes_relatorio)
+        return "\n".join(partesRelatorio)
+
+    def gerar_relatorio_disponibilidade(self):
+        partesRelatorio = ["Relatório de itens disponiveis:"]
+        contadorDisponiveis = 0
+        for item in self.biblioteca.items.values():
+            if item.disponivel:
+                contadorDisponiveis+=1
+                partesRelatorio.append(item.titulo)
+        self.disponiveis = contadorDisponiveis
+        return f"{"\n".join(partesRelatorio)}\nQuantidade de itens disponiveis: {contadorDisponiveis}"
+
+    def gerar_relatorio_emprestimo(self):
+        partesRelatorio = ["\nRelatório de itens emprestados: "]
+        for item in self.biblioteca.items.values():
+            if not item.disponivel:
+                self.emprestados += 1
+                partesRelatorio.append(item.titulo)
+        self.relacao = f"{self.disponiveis}/{self.emprestados}"
+        return f"{"\n".join(partesRelatorio)}\nRelação dos itens disponiveis/emprestados: {self.relacao}"
+
 
 
 livro1 = ItemBiblioteca("Percy Jackson e o ladrão de raios", 2008)
 livro2 = ItemBiblioteca("Percy Jackson e o Mar de Monstros", 2012)
 
-colecao1 = ColecaoLivros("Percy Jackson", 1998, False)
+colecao1 = ColecaoLivros("Coleção Percy Jackson", 1998, True)
 colecao1.adicionar_livro(livro1)
 colecao1.adicionar_livro(livro2)
-colecao1.obter_info()
+print(colecao1.obter_info())
 
 revista1 = Revista("Turma da monica",1990, 230)
-print(revista1.obter_info())
-revista1.atualizar_edicao()
-print(revista1.obter_info())
 
-print(revista1.restringir_emprestimo(20))
+revista1.atualizar_edicao()
+
+
+
 
 bibliotecaDoDorivas = Biblioteca()
-
 bibliotecaDoDorivas.adicionar_item(livro1)
-bibliotecaDoDorivas.adicionar_item(livro1)
+bibliotecaDoDorivas.adicionar_item(livro2)
 bibliotecaDoDorivas.adicionar_item(colecao1)
-bibliotecaDoDorivas.remover_item(livro2)
+bibliotecaDoDorivas.adicionar_item(revista1)
 
-bibliotecaDoDorivas.listar_items_disponiveis()
-bibliotecaDoDorivas.contar_itens_emprestados()
+
+livro1.emprestar()
 
 relatorio = RelatorioBiblioteca(bibliotecaDoDorivas)
 print(relatorio.gerar_relatorio_completo())
+print(relatorio.gerar_relatorio_disponibilidade())
+print(relatorio.gerar_relatorio_emprestimo())
